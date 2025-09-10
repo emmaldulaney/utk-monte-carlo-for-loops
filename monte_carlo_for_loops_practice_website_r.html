@@ -1,0 +1,489 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>UTK Monte Carlo Practice: FOR-Loop Edition</title>
+  <style>
+    /* UTK brand-inspired palette */
+    :root{
+      --ut-orange:#f77f00; /* UT Orange */
+      --ut-dark:#2d2926;   /* Smokey black */
+      --ut-gray:#e2e2e2;   /* light gray background */
+      --ut-light:#ffffff;  /* white */
+      --ut-accent:#00674a; /* secondary green */
+      --warn:#ffd166;
+      --danger:#d62828;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:linear-gradient(120deg,var(--ut-gray),#f9f9f9);color:var(--ut-dark);font:16px/1.5 system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+    header{padding:28px 20px;text-align:center;background:var(--ut-orange);color:var(--ut-light)}
+    h1{margin:0 0 6px;font-size:clamp(22px,4vw,34px)}
+    h2{margin:18px 0 8px;font-size:20px;color:var(--ut-accent)}
+    p{margin:8px 0;color:var(--ut-dark)}
+    .container{max-width:1100px;margin:0 auto;padding:20px}
+    .grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+    .card{background:var(--ut-light);border:2px solid var(--ut-orange);border-radius:16px;box-shadow:0 4px 12px rgba(0,0,0,.1);padding:18px}
+    .toolbar{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0 0}
+    select,button,input[type="number"]{background:var(--ut-light);color:var(--ut-dark);border:2px solid var(--ut-accent);padding:10px 12px;border-radius:10px;outline:none}
+    button{cursor:pointer;transition:.2s transform,.2s opacity;font-weight:bold}
+    button:hover{transform:translateY(-1px);opacity:.9}
+    .accent{background:var(--ut-orange);color:var(--ut-light);border:0}
+    .muted{background:var(--ut-gray)}
+    .danger{background:var(--danger);color:var(--ut-light);border:0}
+    .code,.problem{white-space:pre-wrap;background:#f6f6f6;border:1px solid #ccc;border-radius:12px;padding:14px;min-height:120px;color:#222}
+    .problem{font-size:15px}
+    .code{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;tab-size:2}
+    .row{display:grid;gap:16px;grid-template-columns:1fr}
+    .pill{display:inline-block;padding:4px 10px;border-radius:999px;background:var(--ut-orange);color:var(--ut-light);font-size:12px}
+    .foot{opacity:.8;font-size:13px;margin-top:12px}
+    .small{font-size:13px;color:#444}
+    .kbd{font-family:ui-monospace,Menlo,Consolas,monospace;background:#eee;border:1px solid #aaa;border-bottom-width:2px;padding:2px 6px;border-radius:6px}
+    .warn{background:#fff3cd;border-color:#ffeeba;color:#856404;padding:10px;border-radius:10px}
+    .flex{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .status{margin-top:8px;font-size:13px}
+    .status.ok{color:green}
+    .status.fail{color:var(--danger)}
+    .tests{font-size:13px}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>UTK Monte Carlo Practice — <em>FOR Loops in R</em></h1>
+    <p class="small">Practice Monte Carlo simulations with UT colors & style. Each scenario <span class="pill">uses a for loop</span>. Click “Randomize” to get new numbers.</p>
+  </header>
+
+  <div class="container">
+    <div class="grid">
+      <div class="card">
+        <h2>1) Pick a scenario</h2>
+        <p>These are comparable in difficulty to your Unit 2A homework but are <u>not the same problems</u>. Each one requires a Monte Carlo simulation written with a <span class="kbd">for (trial in 1:ntrials)</span> loop.</p>
+        <label class="small" for="scenario">Scenario</label><br>
+        <select id="scenario"></select>
+        <div class="toolbar">
+          <button id="randomize" class="accent">🎲 Randomize parameters</button>
+          <button id="copyProblem" class="muted">📋 Copy problem</button>
+          <button id="selectProblem" class="muted">🔍 Select problem text</button>
+        </div>
+        <h2>Generated problem</h2>
+        <div id="problem" class="problem" tabindex="0" aria-label="Generated problem text"></div>
+        <div id="problemStatus" class="status"></div>
+      </div>
+
+      <div class="card">
+        <h2>2) Starter R code (FOR‑loop)</h2>
+        <p class="small">Runs as‑is. Includes a <span class="pill">sanity check</span> run before scaling up.</p>
+        <div id="code" class="code" tabindex="0" aria-label="Starter R code"></div>
+        <div class="toolbar">
+          <button id="copyCode" class="accent">📋 Copy R code</button>
+          <button id="selectCode" class="muted">🔍 Select code</button>
+          <button id="downloadCode" class="muted">⬇️ Download .R</button>
+          <button id="tinyRunInfo" class="muted">ℹ️ Sanity check</button>
+        </div>
+        <div id="codeStatus" class="status"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Tips for full‑credit Monte Carlo writeups</h2>
+      <ul>
+        <li>Use <span class="kbd">ntrials <- 10</span> to confirm the loop works, then scale to 100,000.</li>
+        <li>Store one result per trial in a vector or counter.</li>
+        <li>Summarize results with <span class="kbd">mean()</span> or <span class="kbd">hist()</span>.</li>
+        <li><b>UTK Tip:</b> Always comment code to show your reasoning.</li>
+      </ul>
+      <p class="warn">Reminder: These are practice prompts, not homework problems. They are UTK‑styled for extra school spirit!</p>
+    </div>
+
+    <div class="card tests">
+      <h2>Self‑check: Clipboard & fallback tests</h2>
+      <p>Verify copy/download behavior in your browser.</p>
+      <div class="toolbar">
+        <button id="runClipboardTest" class="muted">🧪 Run test</button>
+        <span id="testResult" class="status"></span>
+      </div>
+      <ul id="testLog"></ul>
+      <p class="small">If clipboard is blocked (common inside Canvas), text will be <u>auto‑selected</u>. Press <span class="kbd">Ctrl/⌘+C</span> or use <b>Download .R</b>.</p>
+    </div>
+
+    <div class="card">
+      <h2>Need Python instead of R?</h2>
+      <p class="small">R is default. If needed, translate <span class="kbd">for (trial in 1:ntrials)</span> into Python’s <span class="kbd">for _ in range(ntrials)</span>.</p>
+    </div>
+  </div>
+
+<script>
+// ---------- Scenario library ----------
+// Each scenario returns: { text, code }
+function rngInt(a,b){return Math.floor(Math.random()*(b-a+1))+a}
+function pick(arr){return arr[Math.floor(Math.random()*arr.length)]}
+
+const scenarios = {
+  "Arcade Tickets": () => {
+    const K = rngInt(18,30);
+    const target = rngInt(60, 95);
+    const probs = [0.58,0.16,0.10,0.08,0.05,0.03];
+    const probsStr = probs.map(x=>x.toFixed(2)).join(", ");
+    const text = `At an arcade, each of the first ${K} players wins between 1 and 6 tickets with probabilities
+(1: 0.58, 2: 0.16, 3: 0.10, 4: 0.08, 5: 0.05, 6: 0.03).
+Using a Monte Carlo simulation, estimate the probability that they collect a total of at least ${target} tickets.
+Write the simulation with a FOR loop that first runs 10 trials, then ${pick([50000,100000])} trials.`
+    const code = `# Arcade tickets — FOR‑loop Monte Carlo in R
+set.seed(1)
+K <- ${K}                      # number of players
+target <- ${target}            # total tickets threshold
+probs <- c(${probsStr})        # P(1..6 tickets)
+
+# Sanity check run
+ntrials <- 10
+reached <- rep(FALSE, ntrials)
+for (trial in 1:ntrials) {
+  tickets <- sample(1:6, size = K, replace = TRUE, prob = probs)
+  reached[trial] <- sum(tickets) >= target
+}
+print(table(reached))  # quick check
+
+# Final estimate
+ntrials <- ${pick([50000,100000])}
+reached <- rep(FALSE, ntrials)
+for (trial in 1:ntrials) {
+  tickets <- sample(1:6, size = K, replace = TRUE, prob = probs)
+  reached[trial] <- sum(tickets) >= target
+}
+mean(reached)`
+    return {text, code};
+  },
+
+  "Warehousing — Defects": () => {
+    const N = 40;
+    const probEndRatio = pick([1.6,1.7,1.8]);
+    const text = `A shipment has ${N} independent items. Each item is inspected a random number of times between 3 and 9 (inclusive). The probability of 9 is ${probEndRatio}× less likely than 3, with probabilities varying linearly in between.
+Estimate via Monte Carlo the probability that:
+(a) No item is inspected exactly 5 times;
+(b) At most ${rngInt(22,32)} items are inspected at least 8 times;
+(c) The count of items inspected exactly 4 times exceeds the count inspected exactly 7 times.
+Use a FOR loop and report three estimated probabilities.`
+    const code = `# Warehousing — FOR‑loop Monte Carlo in R
+set.seed(1)
+items <- ${N}
+# linear weights from 3..9 so that P(9) = P(3)/${probEndRatio}
+vals <- 3:9
+w <- seq(from=${probEndRatio}, to=1, length.out=length(vals))
+w <- w / sum(w)  # normalize
+
+# small test
+ntrials <- 10
+A <- B <- C <- rep(FALSE, ntrials)
+for (trial in 1:ntrials) {
+  ins <- sample(vals, size = items, replace = TRUE, prob = w)
+  A[trial] <- sum(ins == 5) == 0
+  B[trial] <- sum(ins >= 8) <= ${rngInt(22,32)}
+  C[trial] <- sum(ins == 4) > sum(ins == 7)
+}
+print(c(A=mean(A), B=mean(B), C=mean(C)))
+
+# final run
+ntrials <- ${pick([50000,100000])}
+A <- B <- C <- rep(FALSE, ntrials)
+for (trial in 1:ntrials) {
+  ins <- sample(vals, size = items, replace = TRUE, prob = w)
+  A[trial] <- sum(ins == 5) == 0
+  B[trial] <- sum(ins >= 8) <= ${rngInt(22,32)}
+  C[trial] <- sum(ins == 4) > sum(ins == 7)
+}
+mean(A); mean(B); mean(C)`
+    return {text, code};
+  },
+
+  "Coffee Shop — Daily Revenue": () => {
+    const days = 30;
+    const drinkProb = (rngInt(10,20))/100;
+    const minParties = rngInt(8,12), maxParties = rngInt(18,24);
+    const text = `For each day in a ${days}-day month, a coffee shop sees between ${minParties} and ${maxParties} parties (uniform). Party sizes are 1–4 with P=[0.20, 0.45, 0.25, 0.10]. Each person buys a pastry costing $3–$7 (uniform). Independently, there is a ${(drinkProb*100).toFixed(0)}% chance a person also buys a $5 drink.
+Use a FOR‑loop Monte Carlo with ${pick([50000,100000])} trials to create a vector \`monthly.total\` of total revenue across the ${days} days.
+Report: summary(monthly.total) and the probability the total is between $${rngInt(18000,22000)} and $${rngInt(23000,27000)} (inclusive).`
+    const code = `# Coffee shop revenue — FOR‑loop Monte Carlo in R
+set.seed(1)
+days <- ${days}
+minP <- ${minParties}; maxP <- ${maxParties}
+p_party <- c(0.20,0.45,0.25,0.10)
+p_drink <- ${drinkProb}
+
+# quick test
+ntrials <- 10
+monthly.total <- rep(0, ntrials)
+for (trial in 1:ntrials) {
+  daily <- rep(0, days)
+  for (d in 1:days) {
+    parties <- sample(minP:maxP, size=1)
+    sizes <- sample(1:4, size = parties, replace = TRUE, prob = p_party)
+    people <- sum(sizes)
+    pastry <- sample(3:7, size = people, replace = TRUE)
+    drink <- sample(c(0,5), size = people, replace = TRUE, prob = c(1-p_drink, p_drink))
+    daily[d] <- sum(pastry) + sum(drink)
+  }
+  monthly.total[trial] <- sum(daily)
+}
+summary(monthly.total)
+
+# final estimate
+ntrials <- ${pick([50000,100000])}
+monthly.total <- rep(0, ntrials)
+for (trial in 1:ntrials) {
+  daily <- rep(0, days)
+  for (d in 1:days) {
+    parties <- sample(minP:maxP, size=1)
+    sizes <- sample(1:4, size = parties, replace = TRUE, prob = p_party)
+    people <- sum(sizes)
+    pastry <- sample(3:7, size = people, replace = TRUE)
+    drink <- sample(c(0,5), size = people, replace = TRUE, prob = c(1-p_drink, p_drink))
+    daily[d] <- sum(pastry) + sum(drink)
+  }
+  monthly.total[trial] <- sum(daily)
+}
+lo <- ${rngInt(19000,22000)}; hi <- ${rngInt(23000,26000)}
+mean(monthly.total >= lo & monthly.total <= hi)`
+    return {text, code};
+  },
+
+  "Random Walk Stock (Bounds)": () => {
+    const start = rngInt(70, 95);
+    const days = pick([60, 80, 100]);
+    const low = rngInt(start-15, start-5);
+    const high = rngInt(start+5, start+18);
+    const altHigh = high + rngInt(8,14);
+    const text = `A stock starts at $${start}. Each day for ${days} days it moves by -3..+3 with probabilities [7,12,18,34,16,9,4]% (respectively).
+Estimate: (i) P( it always stays between $${low} and $${high} ), (ii) P( it ever closes above $${altHigh} ). Use a FOR‑loop.`
+    const code = `# Random‑walk stock — FOR‑loop Monte Carlo in R
+set.seed(1)
+start <- ${start}; days <- ${days}
+probs <- c(7,12,18,34,16,9,4) / 100
+lo <- ${low}; hi <- ${high}; altHi <- ${altHigh}
+
+# test
+ntrials <- 10
+always <- ever <- rep(FALSE, ntrials)
+for (trial in 1:ntrials){
+  steps <- sample(-3:3, size = days, replace = TRUE, prob = probs)
+  close <- start + cumsum(steps)
+  always[trial] <- min(close) >= lo & max(close) <= hi
+  ever[trial]   <- max(close) > altHi
+}
+print(c(always=mean(always), ever=mean(ever)))
+
+# final
+ntrials <- ${pick([20000,50000,100000])}
+always <- ever <- rep(FALSE, ntrials)
+for (trial in 1:ntrials){
+  steps <- sample(-3:3, size = days, replace = TRUE, prob = probs)
+  close <- start + cumsum(steps)
+  always[trial] <- min(close) >= lo & max(close) <= hi
+  ever[trial]   <- max(close) > altHi
+}
+mean(always); mean(ever)`
+    return {text, code};
+  },
+
+  "Colored Beads (Mode not most-likely)": () => {
+    const n = pick([20,30,40]);
+    const trials = pick([20000,50000]);
+    const text = `A bag has colored beads with probabilities: red 12%, blue 35%, green 14%, purple 39%. A random sample of ${n} beads is drawn with replacement.
+Estimate via FOR‑loop Monte Carlo the probability that purple 
+(the most likely color for a bead) does NOT finish as the most frequent color in the sample (ties count as \"most frequent\"). First run 10 trials, then ${trials} trials.`
+    const code = `# Colored beads — FOR‑loop Monte Carlo in R
+set.seed(1)
+n <- ${n}
+probs <- c(0.12,0.35,0.14,0.39)
+cols <- c("red","blue","green","purple")
+
+# quick test
+ntrials <- 10
+notMost <- rep(FALSE, ntrials)
+for (trial in 1:ntrials){
+  draw <- sample(cols, size = n, replace = TRUE, prob = probs)
+  notMost[trial] <- sum(draw=="purple") != max(table(draw))
+}
+mean(notMost)
+
+# final
+ntrials <- ${trials}
+notMost <- rep(FALSE, ntrials)
+for (trial in 1:ntrials){
+  draw <- sample(cols, size = n, replace = TRUE, prob = probs)
+  notMost[trial] <- sum(draw=="purple") != max(table(draw))
+}
+mean(notMost)`
+    return {text, code};
+  },
+
+  "Daily Calls (Weighted)": () => {
+    const days = pick([28,30,31]);
+    const scale = rngInt(32,48);
+    const trials = pick([30000,50000]);
+    const low = rngInt(2000,2600), high = low + rngInt(400,900);
+    const text = `The number of calls per day is an integer 1–250 with relative weight w(x) = x^2 * exp(-x/${scale}). Simulate the total calls over ${days} days using a FOR‑loop Monte Carlo with ${trials} trials.
+Report summary(total.calls) and P(total between ${low} and ${high}).`
+    const code = `# Daily calls — FOR‑loop Monte Carlo in R
+set.seed(1)
+days <- ${days}
+x <- 1:250
+w <- x^2 * exp(-x/${scale}) ; w <- w/sum(w)
+
+# test
+ntrials <- 10
+total.calls <- rep(0,ntrials)
+for (trial in 1:ntrials){
+  total.calls[trial] <- sum( sample(x, size = days, replace = TRUE, prob = w) )
+}
+summary(total.calls)
+
+# final
+ntrials <- ${trials}
+total.calls <- rep(0,ntrials)
+for (trial in 1:ntrials){
+  total.calls[trial] <- sum( sample(x, size = days, replace = TRUE, prob = w) )
+}
+mean(total.calls >= ${low} & total.calls <= ${high})`
+    return {text, code};
+  }
+};
+
+const scenarioList = Object.keys(scenarios);
+const scenarioSelect = document.getElementById('scenario');
+scenarioList.forEach(name=>{const o=document.createElement('option');o.value=name;o.textContent=name;scenarioSelect.appendChild(o)});
+
+function setContent(id, text){
+  const el = document.getElementById(id);
+  el.textContent = text;
+}
+
+let lastBlobUrl = null;
+function makeDownloadUrl(text){
+  const blob = new Blob([text], {type:'text/plain'});
+  const url = URL.createObjectURL(blob);
+  return url;
+}
+
+function render(){
+  const gen = scenarios[scenarioSelect.value]();
+  setContent('problem', gen.text);
+  setContent('code', gen.code);
+  // refresh download url
+  if (lastBlobUrl) URL.revokeObjectURL(lastBlobUrl);
+  lastBlobUrl = makeDownloadUrl(gen.code);
+}
+
+scenarioSelect.addEventListener('change', render);
+document.getElementById('randomize').addEventListener('click', render);
+
+// ---- Robust copy helpers (with fallbacks) ----
+function status(el, msg, ok){
+  el.textContent = msg;
+  el.className = 'status ' + (ok ? 'ok' : 'fail');
+}
+
+function selectElementText(el){
+  const range = document.createRange();
+  range.selectNodeContents(el);
+  const sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
+  el.focus();
+}
+
+async function copyTextFromElement(el, statusEl){
+  const text = el.textContent || '';
+  // Try modern API first (may be blocked in some embeds)
+  try{
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      status(statusEl, 'Copied to clipboard ✔', true);
+      return 'clipboard';
+    }
+    throw new Error('Navigator clipboard unavailable');
+  }catch(err){
+    // Fallback: execCommand
+    try{
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position='fixed'; ta.style.opacity='0'; ta.setAttribute('readonly','');
+      document.body.appendChild(ta);
+      ta.select();
+      const ok = document.execCommand('copy');
+      document.body.removeChild(ta);
+      if(ok){
+        status(statusEl, 'Copied via fallback ✔', true);
+        return 'execCommand';
+      }
+      throw new Error('execCommand failed');
+    }catch(err2){
+      // Final fallback: select text and instruct user
+      selectElementText(el);
+      status(statusEl, 'Clipboard blocked. Text selected—press Ctrl/⌘+C to copy.', false);
+      return 'select-only';
+    }
+  }
+}
+
+// Buttons: copy/select for problem & code
+const problemEl = document.getElementById('problem');
+const codeEl = document.getElementById('code');
+const problemStatus = document.getElementById('problemStatus');
+const codeStatus = document.getElementById('codeStatus');
+
+document.getElementById('copyProblem').addEventListener('click',()=>copyTextFromElement(problemEl, problemStatus));
+document.getElementById('copyCode').addEventListener('click',()=>copyTextFromElement(codeEl, codeStatus));
+document.getElementById('selectProblem').addEventListener('click',()=>{selectElementText(problemEl);status(problemStatus,'Text selected—press Ctrl/⌘+C.',false)});
+document.getElementById('selectCode').addEventListener('click',()=>{selectElementText(codeEl);status(codeStatus,'Code selected—press Ctrl/⌘+C.',false)});
+
+document.getElementById('tinyRunInfo').addEventListener('click',()=>{
+  alert('Start tiny (ntrials <- 10). Ensure the loop completes and outputs look reasonable (no NAs, probabilities in [0,1]). Then set ntrials to the required size and re-run.');
+});
+
+document.getElementById('downloadCode').addEventListener('click',()=>{
+  const url = makeDownloadUrl(codeEl.textContent || '');
+  const a = document.createElement('a');
+  a.href = url; a.download = 'utk_monte_carlo_for_loops.R';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(()=>{URL.revokeObjectURL(url); a.remove();}, 0);
+});
+
+// Self‑test: attempts both copy paths
+function log(li){ document.getElementById('testLog').appendChild(li); }
+function mk(msg, ok){ const li = document.createElement('li'); li.textContent = (ok? '✅ ' : '❌ ') + msg; return li; }
+
+document.getElementById('runClipboardTest').addEventListener('click', async ()=>{
+  document.getElementById('testLog').innerHTML = '';
+  const resEl = document.getElementById('testResult');
+  const testEl = document.createElement('div');
+  testEl.textContent = 'TEST STRING';
+  document.body.appendChild(testEl);
+  // Try modern API
+  let ok1=false, ok2=false;
+  if (navigator.clipboard && window.isSecureContext){
+    try{ await navigator.clipboard.writeText(testEl.textContent); ok1=true; log(mk('Modern clipboard.writeText() succeeded', true)); }
+    catch(e){ log(mk('Modern clipboard.writeText() blocked', false)); }
+  } else {
+    log(mk('Modern clipboard API unavailable in this context', false));
+  }
+  // Try execCommand fallback
+  try{
+    const ta = document.createElement('textarea');
+    ta.value = testEl.textContent; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.select();
+    ok2 = document.execCommand('copy');
+    document.body.removeChild(ta);
+    log(mk('Fallback document.execCommand("copy") ' + (ok2? 'succeeded':'failed'), ok2));
+  }catch(e){ log(mk('Fallback execCommand raised an error', false)); }
+  document.body.removeChild(testEl);
+  if (ok1 || ok2){ resEl.textContent = 'Copy is supported (at least one method works).'; resEl.className='status ok'; }
+  else { resEl.textContent = 'Copy is blocked. Buttons will select text; use Ctrl/⌘+C or Download .R.'; resEl.className='status fail'; }
+});
+
+// initial render
+scenarioSelect.value = scenarioList[0];
+render();
+</script>
+</body>
+</html>
